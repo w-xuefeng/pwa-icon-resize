@@ -215,6 +215,26 @@
       border-left: 4px solid #4A6FA5;
     }
 
+    .dimension.custom-dimension {
+      border-left-color: #2f855a;
+      background-color: #f0fff4;
+    }
+
+    .input-hint {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: #5f6f82;
+    }
+
+    .input-hint.success {
+      color: #2f855a;
+    }
+
+    .input-hint.error {
+      color: #c53030;
+    }
+
     .preview-container {
       display: flex;
       justify-content: center;
@@ -530,22 +550,18 @@
               <option value="stretch">拉伸填充 (可能变形)</option>
             </select>
           </div>
+
+          <div class="setting-group">
+            <label class="setting-label" for="customSizes">自定义尺寸</label>
+            <textarea id="customSizes" class="color-input" rows="4"
+              placeholder="每行或用逗号输入一个尺寸，例如：256、256x256、310x150"></textarea>
+            <p class="input-hint" id="customSizeHint">留空时仅生成默认 PWA 尺寸；支持正方形和矩形尺寸。</p>
+          </div>
         </div>
 
         <div style="margin-top: 20px;">
           <p><strong>将生成的图标尺寸：</strong></p>
-          <div class="dimensions-list">
-            <div class="dimension">512×512 (PWA主图标)</div>
-            <div class="dimension">384×384 (PWA中等图标)</div>
-            <div class="dimension">192×192 (PWA小图标)</div>
-            <div class="dimension">180×180 (Apple Touch图标)</div>
-            <div class="dimension">152×152 (Apple Touch图标)</div>
-            <div class="dimension">144×144 (Microsoft Tile图标)</div>
-            <div class="dimension">128×128 (通用图标)</div>
-            <div class="dimension">96×96 (桌面快捷方式)</div>
-            <div class="dimension">72×72 (Android标签图标)</div>
-            <div class="dimension">32×32 (Favicon)</div>
-          </div>
+          <div class="dimensions-list" id="dimensionsList"></div>
         </div>
       </div>
 
@@ -559,58 +575,7 @@
         </div>
 
         <h3 class="section-title">图标预览</h3>
-        <div class="icons-grid" id="iconsGrid">
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-512">512×512</div>
-            <div class="icon-size">512×512</div>
-            <div class="icon-name">PWA主图标</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-384">384×384</div>
-            <div class="icon-size">384×384</div>
-            <div class="icon-name">PWA中等图标</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-192">192×192</div>
-            <div class="icon-size">192×192</div>
-            <div class="icon-name">PWA小图标</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-180">180×180</div>
-            <div class="icon-size">180×180</div>
-            <div class="icon-name">Apple Touch图标</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-152">152×152</div>
-            <div class="icon-size">152×152</div>
-            <div class="icon-name">Apple Touch图标</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-144">144×144</div>
-            <div class="icon-size">144×144</div>
-            <div class="icon-name">Microsoft Tile</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-128">128×128</div>
-            <div class="icon-size">128×128</div>
-            <div class="icon-name">通用图标</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-96">96×96</div>
-            <div class="icon-size">96×96</div>
-            <div class="icon-name">桌面快捷方式</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-72">72×72</div>
-            <div class="icon-size">72×72</div>
-            <div class="icon-name">Android标签图标</div>
-          </div>
-          <div class="icon-item">
-            <div class="icon-preview grid-bg" id="preview-32">32×32</div>
-            <div class="icon-size">32×32</div>
-            <div class="icon-name">Favicon</div>
-          </div>
-        </div>
+        <div class="icons-grid" id="iconsGrid"></div>
       </div>
 
       <div class="download-section">
@@ -651,65 +616,79 @@
       const colorBgRadio = document.getElementById('colorBg');
       const scaleModeSelect = document.getElementById('scaleMode');
       const backgroundSettings = document.getElementById('backgroundSettings');
+      const customSizesInput = document.getElementById('customSizes');
+      const customSizeHint = document.getElementById('customSizeHint');
+      const dimensionsList = document.getElementById('dimensionsList');
+      const iconsGrid = document.getElementById('iconsGrid');
 
-      // 定义需要生成的尺寸
-      const iconSizes = [{
+      // 定义默认需要生成的尺寸
+      const defaultIconSizes = [{
           width: 512,
           height: 512,
+          id: "default-pwa-512",
           name: "pwa-512",
           description: "PWA主图标"
         },
         {
           width: 384,
           height: 384,
+          id: "default-pwa-384",
           name: "pwa-384",
           description: "PWA中等图标"
         },
         {
           width: 192,
           height: 192,
+          id: "default-pwa-192",
           name: "pwa-192",
           description: "PWA小图标"
         },
         {
           width: 180,
           height: 180,
+          id: "default-apple-touch-180",
           name: "apple-touch-180",
           description: "Apple Touch图标"
         },
         {
           width: 152,
           height: 152,
+          id: "default-apple-touch-152",
           name: "apple-touch-152",
           description: "Apple Touch图标"
         },
         {
           width: 144,
           height: 144,
+          id: "default-microsoft-tile-144",
           name: "microsoft-tile-144",
           description: "Microsoft Tile图标"
         },
         {
           width: 128,
           height: 128,
+          id: "default-icon-128",
           name: "icon-128",
           description: "通用图标"
         },
         {
           width: 96,
           height: 96,
+          id: "default-icon-96",
           name: "icon-96",
           description: "桌面快捷方式"
         },
         {
           width: 72,
           height: 72,
+          id: "default-android-72",
           name: "android-72",
           description: "Android标签图标"
         },
         {
           width: 32,
           height: 32,
+          id: "default-favicon-32",
           name: "favicon-32",
           description: "Favicon"
         }
@@ -717,6 +696,121 @@
 
       let originalImage = null;
       let imageName = "logo";
+      let customIconSizes = [];
+
+      function formatSizeLabel(size) {
+        return `${size.width}×${size.height}`;
+      }
+
+      function getAllIconSizes() {
+        return [...defaultIconSizes, ...customIconSizes];
+      }
+
+      function renderSizeViews() {
+        const allSizes = getAllIconSizes();
+
+        dimensionsList.innerHTML = allSizes.map(size => `
+          <div class="dimension${size.custom ? ' custom-dimension' : ''}">${formatSizeLabel(size)} (${size.description})</div>
+        `).join('');
+
+        iconsGrid.innerHTML = allSizes.map(size => `
+          <div class="icon-item">
+            <div class="icon-preview grid-bg" id="preview-${size.id}">${formatSizeLabel(size)}</div>
+            <div class="icon-size">${formatSizeLabel(size)}</div>
+            <div class="icon-name">${size.description}</div>
+          </div>
+        `).join('');
+      }
+
+      function updateCustomSizeHint(message, type) {
+        customSizeHint.textContent = message;
+        customSizeHint.className = type ? `input-hint ${type}` : 'input-hint';
+      }
+
+      function parseCustomSizes(value) {
+        const tokens = value
+          .split(/[\n,，;；]+/)
+          .map(token => token.trim())
+          .filter(Boolean);
+        const seenSizes = new Set(defaultIconSizes.map(size => `${size.width}x${size.height}`));
+        const sizes = [];
+        const invalidEntries = [];
+        const duplicateEntries = [];
+
+        tokens.forEach(token => {
+          const normalized = token.replace(/\s+/g, '').toLowerCase();
+          const match = normalized.match(/^(\d+)(?:[x×](\d+))?$/);
+
+          if (!match) {
+            invalidEntries.push(token);
+            return;
+          }
+
+          const width = Number(match[1]);
+          const height = Number(match[2] || match[1]);
+          const sizeKey = `${width}x${height}`;
+
+          if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 4096 || height > 4096) {
+            invalidEntries.push(token);
+            return;
+          }
+
+          if (seenSizes.has(sizeKey)) {
+            duplicateEntries.push(token);
+            return;
+          }
+
+          seenSizes.add(sizeKey);
+          sizes.push({
+            width,
+            height,
+            id: `custom-${sizeKey}`,
+            name: `custom-${sizeKey}`,
+            description: height === width ? "自定义尺寸" : "自定义矩形尺寸",
+            custom: true
+          });
+        });
+
+        return {
+          sizes,
+          invalidEntries,
+          duplicateEntries
+        };
+      }
+
+      function applyCustomSizes() {
+        const parsed = parseCustomSizes(customSizesInput.value);
+        const messages = [];
+
+        customIconSizes = parsed.sizes;
+
+        if (!customSizesInput.value.trim()) {
+          updateCustomSizeHint('留空时仅生成默认 PWA 尺寸；支持正方形和矩形尺寸。');
+        } else {
+          if (parsed.sizes.length) {
+            messages.push(`已添加 ${parsed.sizes.length} 个自定义尺寸`);
+          }
+
+          if (parsed.duplicateEntries.length) {
+            messages.push(`忽略重复尺寸：${parsed.duplicateEntries.join('、')}`);
+          }
+
+          if (parsed.invalidEntries.length) {
+            messages.push(`格式无效：${parsed.invalidEntries.join('、')}`);
+          }
+
+          updateCustomSizeHint(
+            messages.join('；') || '未识别到有效尺寸，请按示例格式输入。',
+            parsed.invalidEntries.length ? 'error' : 'success'
+          );
+        }
+
+        renderSizeViews();
+
+        if (originalImage) {
+          generatePreviews();
+        }
+      }
 
       // 初始化背景颜色设置
       function updateBackgroundSettings() {
@@ -732,6 +826,7 @@
 
       // 初始化
       updateBackgroundSettings();
+      renderSizeViews();
 
       // 文件上传按钮点击事件
       uploadBtn.addEventListener('click', () => fileInput.click());
@@ -809,6 +904,8 @@
           generatePreviews();
         }
       });
+
+      customSizesInput.addEventListener('input', applyCustomSizes);
 
       // 处理上传的文件
       function handleFile(file) {
@@ -888,9 +985,10 @@
       function generatePreviews() {
         const bgSettings = getBackgroundSettings();
         const scaleMode = scaleModeSelect.value;
+        const sizesToRender = getAllIconSizes();
 
-        iconSizes.forEach(size => {
-          const previewElement = document.getElementById(`preview-${size.width}`);
+        sizesToRender.forEach(size => {
+          const previewElement = document.getElementById(`preview-${size.id}`);
           if (!previewElement) return;
 
           // 清空预览区域
@@ -1003,9 +1101,10 @@
           // 获取背景设置
           const bgSettings = getBackgroundSettings();
           const scaleMode = scaleModeSelect.value;
+          const sizesToGenerate = getAllIconSizes();
 
           // 为每个尺寸生成图片并添加到ZIP
-          for (const size of iconSizes) {
+          for (const size of sizesToGenerate) {
             const imageData = generateIcon(size.width, size.height, bgSettings, scaleMode);
             const fileName = `${size.name}-${size.width}x${size.height}.png`;
             iconFolder.file(fileName, imageData, {
@@ -1030,7 +1129,7 @@
           saveAs(zipBlob, `pwa-icons-${imageName}.zip`);
 
           // 显示成功消息
-          showStatus(`图标包生成成功！包含${iconSizes.length}个图标文件。`, 'success');
+          showStatus(`图标包生成成功！包含${sizesToGenerate.length}个图标文件。`, 'success');
         } catch (error) {
           console.error('生成图标包时出错:', error);
           showStatus('生成图标包时出错，请重试。错误: ' + error.message, 'error');
@@ -1055,11 +1154,8 @@
         if (bgSettings.enabled && bgSettings.color !== 'transparent') {
           ctx.fillStyle = bgSettings.color;
           ctx.fillRect(0, 0, targetWidth, targetHeight);
-        } else if (bgSettings.enabled && bgSettings.color === 'transparent') {
-          // 透明背景 - 绘制棋盘格背景
-          drawCheckerboard(ctx, targetWidth, targetHeight);
         }
-        // 如果背景未启用，保持透明背景
+        // 透明背景或未启用背景时，导出文件保持透明像素
 
         // 绘制图片
         drawImageToCanvas(ctx, originalImage, 0, 0, targetWidth, targetHeight, scaleMode);
@@ -1096,6 +1192,7 @@
 
       // 生成说明文件内容
       function generateReadmeContent(bgSettings) {
+        const allSizes = getAllIconSizes();
         const bgText = bgSettings.enabled ?
           (bgSettings.color === 'transparent' ? '透明背景' : `背景色: ${bgSettings.color}`) :
           '无背景（透明）';
@@ -1103,7 +1200,7 @@
         return `PWA图标包 - 生成于 ${new Date().toLocaleDateString()}
 
 包含以下尺寸的图标文件：
-${iconSizes.map(size => `- ${size.name}-${size.width}x${size.height}.png (${size.width}×${size.width}): ${size.description}`).join('\n')}
+${allSizes.map(size => `- ${size.name}-${size.width}x${size.height}.png (${size.width}×${size.height}): ${size.description}`).join('\n')}
 
 生成设置：
 - 背景设置: ${bgText}
