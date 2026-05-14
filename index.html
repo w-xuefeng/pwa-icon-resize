@@ -160,10 +160,14 @@
     }
 
     .color-input-group {
-      display: flex;
+      display: none;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
+    }
+
+    .transparent-option:has(#colorBg:checked) + .color-input-group {
+      display: flex;
     }
 
     .color-preview {
@@ -527,11 +531,6 @@
 
           <div class="setting-group" id="backgroundSettings">
             <div class="setting-label">背景颜色</div>
-            <div class="color-input-group">
-              <div class="color-preview" id="colorPreview" style="background-color: #ffffff;"></div>
-              <input type="color" id="bgColor" class="color-input" value="#ffffff">
-              <input type="text" id="bgColorText" class="color-input" value="#ffffff" placeholder="#ffffff">
-            </div>
             <div class="transparent-option">
               <input type="radio" id="transparentBg" name="bgType" value="transparent">
               <label for="transparentBg">透明背景 (模拟无背景色)</label>
@@ -539,6 +538,11 @@
             <div class="transparent-option">
               <input type="radio" id="colorBg" name="bgType" value="color" checked>
               <label for="colorBg">自定义背景色</label>
+            </div>
+            <div class="color-input-group">
+              <div class="color-preview" id="colorPreview" style="background-color: #ffffff;"></div>
+              <input type="color" id="bgColor" class="color-input" value="#ffffff">
+              <input type="text" id="bgColorText" class="color-input" value="#ffffff" placeholder="#ffffff">
             </div>
           </div>
 
